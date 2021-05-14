@@ -1,0 +1,19 @@
+{
+  "name": "mixdup-server",
+  "version": "1.0.0",
+  "description": "mixdup server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Greyson Elkins",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server": "^2.24.0",
+    "apollo-server-express": "^2.24.0",
+    "dotenv": "^9.0.2",
+    "express": "^4.17.1",
+    "firebase": "^8.6.1",
+    "graphql": "^15.5.0"
+  }
+}
