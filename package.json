@@ -10,13 +10,19 @@
   "author": "Greyson Elkins",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^5.8.5",
     "apollo-server": "^2.24.0",
     "apollo-server-express": "^2.24.0",
+    "btoa": "^1.2.1",
+    "cors": "^2.8.5",
+    "date-fns": "^2.21.3",
     "dotenv": "^9.0.2",
     "express": "^4.17.1",
     "firebase": "^8.6.1",
     "firebase-admin": "^9.8.0",
-    "graphql": "^15.5.0"
+    "graphql": "^15.5.0",
+    "node-fetch": "^2.6.1",
+    "webcrypto-core": "^1.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.2",
