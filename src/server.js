@@ -15,7 +15,9 @@ import {
   getTokensFromFirebase, 
   getLastWeeksPlaylistDynamically,
   getThisWeeksPlaylistDynamically, 
-  attemptSubmissionToFirebase
+  attemptSubmissionToFirebase,
+  userVotedThisWeek,
+  submitVotesToFirebase
 } from './firebase'
 require('dotenv').config()
 
@@ -85,6 +87,18 @@ app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
     response.status(200).send()
   } catch (error) {
     console.error('submit-song-endpoint:', error)
+  }
+})
+
+app.post('/submit-votes', checkIfAuthenticated, async (request, response) => {
+  try {
+    const { user_id, votes, date } = request.body
+    if (await userVotedThisWeek(user_id, date)) return response.status(429).send()
+    submitVotesToFirebase(user_id, votes, date)
+    response.status(201).send()
+  } catch (error) {
+    console.error(error)
+    response.status(error.status || 500).json({ error })
   }
 })
 
