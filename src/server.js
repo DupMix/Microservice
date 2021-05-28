@@ -33,6 +33,11 @@ export const updateLocalTokens = ({ access_token, refresh_token }) => {
   app.locals.refresh_token = refresh_token
 }
 
+export const databaseTokensChanged = async () => {
+  const databaseTokens = await getTokensFromFirebase()
+  return app.locals.access_token !== databaseTokens.access_token
+}
+
 app.get('/', async (request, response) => {
   if (app.locals.access_token) {
     response.send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
@@ -99,7 +104,7 @@ export const checkTokens = async () => {
   }
 }
 
-app.listen({ port: 8000 }, () => {
+app.listen({ port: 8000 }, async () => {
   console.log(`The Mixdup server is running on http://localhost:8000`)  
   checkTokens()
 })

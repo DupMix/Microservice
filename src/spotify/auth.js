@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import btoa from 'btoa'
 import { saveTokensToFirebase, getTokensFromFirebase } from '../firebase'
-import { updateLocalTokens } from '../server'
+import { updateLocalTokens, databaseTokensChanged } from '../server'
 
 const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = process.env
 
@@ -68,11 +68,11 @@ export const getRefreshedAuth = async () => {
   console.log('spinning the wax')
   try { 
     const databaseTokens = await getTokensFromFirebase()
-    // if (databaseTokensChanged()) {
-    //   console.log('tokens changed')
-    //   updateLocalTokens(databaseTokens)
-    //   return databaseTokens
-    // }
+    if (await databaseTokensChanged()) {
+      console.log('tokens changed')
+      updateLocalTokens(databaseTokens)
+      return databaseTokens
+    }
   
     const params = {
       grant_type: 'refresh_token',
