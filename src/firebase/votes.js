@@ -62,13 +62,12 @@ export const getAllWeekVotes = async (date) => {
       .get()
     const allVotes = snapshot.exists() && snapshot.val() 
     if (!allVotes) return []
-    const parsedDate = parseISO(date)
+    const parsedDate = parseISO(date) // today
     const lastSunday = sub(parsedDate, { days: getDay(parsedDate) })
     const votes = Object.values(allVotes)
     return votes.filter(({ created_at }) => {
       const made = parseISO(created_at)
-      return (isAfter(made, nextTuesday(lastSunday) && isBefore(made, nextSunday(parsedDate))))
-    // is after this tuesday and before next sunday
+      return (isAfter(made, nextTuesday(lastSunday)) && isBefore(made, nextSunday(parsedDate)))
     })
   } catch (error) {
     console.log('error getting votes:', error)
