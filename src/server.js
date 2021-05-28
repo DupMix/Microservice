@@ -1,30 +1,125 @@
 import express from 'express'
-import { ApolloServer } from 'apollo-server-express'
-import firebase from 'firebase'
+import cors from 'cors'
+import { getDay, parseISO } from 'date-fns'
+import { checkIfAuthenticated } from './users'
+import performAuthorizedSpotifyAction, { 
+  useSpotify,
+  constructAuthURI, 
+  requestAccessToken, 
+  searchSpotify, 
+  makePlaylist, 
+  getPlaylist,
+  submitToPlaylist
+} from './spotify'
+import { 
+  saveTokensToFirebase, 
+  getTokensFromFirebase, 
+  getLastWeeksPlaylist, 
+  getLastWeeksPlaylistDynamically,
+  getThisWeeksPlaylist, 
+  attemptSubmissionToFirebase
+} from './firebase'
+import { getThisWeeksPlaylistDynamically } from './firebase/playlists'
 require('dotenv').config()
 
-import typeDefs from './typeDefs'
-import resolvers from './resolvers'
-
-const { FIRE_API_KEY, FIRE_AUTH_DOMAIN, FIRE_DATABASE_URL, FIRE_PROJECT_ID } = process.env
-
 const app = express()
+app.use(cors())
+app.use(express.json())
 
-const firebaseClient = firebase.initializeApp({
-  apiKey: FIRE_API_KEY,
-  authDomain: FIRE_AUTH_DOMAIN,
-  databaseURL: FIRE_DATABASE_URL,
-  projectId: FIRE_PROJECT_ID
+app.locals = {
+  access_token: '',
+  refresh_token: '',
+}
+
+export const updateLocalTokens = ({ access_token, refresh_token }) => {
+  app.locals.access_token = access_token
+  app.locals.refresh_token = refresh_token
+}
+
+app.get('/', async (request, response) => {
+  if (app.locals.access_token) {
+    response.send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
+  } else {
+    const authUri = await constructAuthURI('http://localhost:8000/authorize')
+    return authUri ? response.redirect(authUri) : response.send('something went wrong')
+  }
 })
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: ({ req }) => ({ headers: req.headers, firebaseClient })
+app.get('/authorize', async (request, response) => {
+  const code = request.query.code
+  const tokens = await requestAccessToken(code, 'http://localhost:8000/authorize')
+  if (tokens && tokens.access_token && tokens.refresh_token) {
+    updateLocalTokens(tokens)
+    saveTokensToFirebase(tokens)
+    response.redirect('http://localhost:8000')
+  } else {
+    response.redirect('http://localhost:8000') // would be nice if there was some handling
+  }
 })
 
-server.applyMiddleware({ app })
+app.post('/search-spotify', checkIfAuthenticated, (request, response) => {
+  console.log('searching...')
+  const { query } = request.body
+  return performAuthorizedSpotifyAction(searchSpotify, query, response)
+})
+
+app.get('/test-make', async (request, response) => {
+  const newPlaylist = await useSpotify(makePlaylist)
+  response.send(newPlaylist)
+})
+
+app.post('/contest-playlist', async (request, response) => {
+  const { date } = request.body
+  if (!date) response.status(403).json('You must provide a date to get a playlist')
+  try {
+    const playlist = getDay(parseISO(date)) >= 3 ? await getThisWeeksPlaylistDynamically(date) : await getLastWeeksPlaylistDynamically(date)
+    playlist ? performAuthorizedSpotifyAction(getPlaylist, playlist.spotify_playlist_id, response) : response.status(404)
+  } catch (error) {
+    console.error(error)
+    response.status(error.status || 500).json({ error })
+  }
+})
+// sunday - tuesday, last weeks playlist
+// wednesday - saturday, this weeks playlist
+
+app.get('/last-weeks-playlist', async (request, response) => {
+  const lastWeek = await getLastWeeksPlaylist()
+  return performAuthorizedSpotifyAction(getPlaylist, lastWeek.spotify_playlist_id, response)
+})
+
+app.get('/test-this-weeks', async (request, response) => {
+  const thisWeeksId = await getThisWeeksPlaylist(response)
+  response.send(thisWeeksId)
+})
+
+app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
+  try {
+    const {user_id, submission_uri, date} = request.body
+    const playlist_id = await attemptSubmissionToFirebase(user_id, submission_uri, date, response)
+    playlist_id && await useSpotify(submitToPlaylist, { playlist_id, submission_uri })
+    response.status(200).send()
+  } catch (error) {
+    console.error('submit-song-endpoint:', error)
+  }
+})
+
+export const checkTokens = async () => {
+  console.log('Checking for Spotify tokens')
+  if (app.locals.access_token !== '' && app.locals.refresh_token !== '') {
+    console.log('Found local tokens')
+    return { access_token: app.locals.access_token }
+  }
+  const tokens = await getTokensFromFirebase()
+  if (tokens?.access_token && tokens?.refresh_token) {
+    console.log('Tokens retrieved from the database')
+    updateLocalTokens(tokens)
+    return tokens.access_token
+  } else {
+    console.error('The server needs to be authorized for Spotify. Go to http://localhost:8000')
+  }
+}
 
 app.listen({ port: 8000 }, () => {
   console.log(`The Mixdup server is running on http://localhost:8000`)  
+  checkTokens()
 })
