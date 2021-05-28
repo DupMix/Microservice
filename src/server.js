@@ -7,19 +7,16 @@ import performAuthorizedSpotifyAction, {
   constructAuthURI, 
   requestAccessToken, 
   searchSpotify, 
-  makePlaylist, 
   getPlaylist,
   submitToPlaylist
 } from './spotify'
 import { 
   saveTokensToFirebase, 
   getTokensFromFirebase, 
-  getLastWeeksPlaylist, 
   getLastWeeksPlaylistDynamically,
-  getThisWeeksPlaylist, 
+  getThisWeeksPlaylistDynamically, 
   attemptSubmissionToFirebase
 } from './firebase'
-import { getThisWeeksPlaylistDynamically } from './firebase/playlists'
 require('dotenv').config()
 
 const app = express()
@@ -63,11 +60,6 @@ app.post('/search-spotify', checkIfAuthenticated, (request, response) => {
   return performAuthorizedSpotifyAction(searchSpotify, query, response)
 })
 
-app.get('/test-make', async (request, response) => {
-  const newPlaylist = await useSpotify(makePlaylist)
-  response.send(newPlaylist)
-})
-
 app.post('/contest-playlist', async (request, response) => {
   const { date } = request.body
   if (!date) response.status(403).json('You must provide a date to get a playlist')
@@ -78,18 +70,6 @@ app.post('/contest-playlist', async (request, response) => {
     console.error(error)
     response.status(error.status || 500).json({ error })
   }
-})
-// sunday - tuesday, last weeks playlist
-// wednesday - saturday, this weeks playlist
-
-app.get('/last-weeks-playlist', async (request, response) => {
-  const lastWeek = await getLastWeeksPlaylist()
-  return performAuthorizedSpotifyAction(getPlaylist, lastWeek.spotify_playlist_id, response)
-})
-
-app.get('/test-this-weeks', async (request, response) => {
-  const thisWeeksId = await getThisWeeksPlaylist(response)
-  response.send(thisWeeksId)
 })
 
 app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
