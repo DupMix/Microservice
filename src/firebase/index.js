@@ -6,3 +6,4 @@ export {
   getThisWeeksPlaylistDynamically,
   attemptSubmissionToFirebase,
 } from './playlists'
+export { submitVotesToFirebase, getAllWeekVotes, userVotedThisWeek } from './votes'
