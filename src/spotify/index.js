@@ -13,6 +13,7 @@ export const useSpotify = async (spotifyAction, query) => {
 }
 
 const performAuthorizedSpotifyAction = async (spotifyAction, query, res) => {
+  // this should get deprecated
   const { access_token } = await checkTokens()
  
   return spotifyAction(access_token, query).then((response) => {
