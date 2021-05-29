@@ -5,7 +5,7 @@ export const submitVotesToFirebase = (userId, votes, date) => {
   const voteFields = Object.keys(votes)
   voteFields.forEach(field => {
     if (field === 'heardBefore') return votes.heardBefore.forEach(heard => {
-      submitVoteToFirebase(userId, heard, 0)
+      submitVoteToFirebase(userId, heard, 0, date)
     })
     submitVoteToFirebase(userId, votes[field], valueVote(field), date)
   })
