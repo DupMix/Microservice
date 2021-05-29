@@ -81,8 +81,8 @@ app.post('/contest-playlist', async (request, response) => {
 
 app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
   try {
-    const {user_id, submission_uri, date} = request.body
-    const playlist_id = await attemptSubmissionToFirebase(user_id, submission_uri, date, response)
+    const {user_id, submission_uri, trackName, date} = request.body
+    const playlist_id = await attemptSubmissionToFirebase(user_id, submission_uri, trackName, date, response)
     playlist_id && await useSpotify(submitToPlaylist, { playlist_id, submission_uri })
     response.status(200).send()
   } catch (error) {

@@ -91,7 +91,7 @@ const checkForExistingSubmission = async (user, playlist_id) => {
   }
 // submission: userId, submission_uri, created_at, spotify_playlist_id
 
-export const attemptSubmissionToFirebase = async (userId, submission_uri, date, response) => { 
+export const attemptSubmissionToFirebase = async (userId, submission_uri, trackName, date, response) => { 
   try {
     let newId;
     const thisWeeksPlaylist =  await getThisWeeksPlaylistDynamically(date, true)
@@ -102,19 +102,20 @@ export const attemptSubmissionToFirebase = async (userId, submission_uri, date, 
       if (exists) return response.status(429).send()
     }
       const playlist = thisWeeksPlaylist ? thisWeeksPlaylist.spotify_playlist_id : newId
-      await saveSubmissionToFirebase(playlist, userId, submission_uri, date)
+      await saveSubmissionToFirebase(playlist, userId, submission_uri, trackName, date)
       return playlist
   } catch (error) {
     console.error('firebase-submission-error:', error)
   }
 }
 
-export const saveSubmissionToFirebase = async (spotify_playlist_id, userId, submission_uri, date) => {
+export const saveSubmissionToFirebase = async (spotify_playlist_id, userId, submission_uri, trackName, date) => {
   try {
     const newSubmission = await admin.database().ref('submission/').push()
     newSubmission.set({
       spotify_playlist_id,
       userId,
+      trackName,
       submission_uri,
       created_at: format(parseISO(date), 'yyyy-MM-dd'),
     })
