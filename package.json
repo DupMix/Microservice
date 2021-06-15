@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/server.js"
+    "start": "serve -s build",
+    "local": "nodemon --exec babel-node src/server.js"
   },
   "author": "Greyson Elkins",
   "license": "ISC",
@@ -22,6 +23,7 @@
     "firebase-admin": "^9.8.0",
     "graphql": "^15.5.0",
     "node-fetch": "^2.6.1",
+    "serve": "^12.0.0",
     "webcrypto-core": "^1.2.0"
   },
   "devDependencies": {
