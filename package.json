@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
+    "start": "node --experimental-modules src/server.js",
     "local": "nodemon --exec babel-node src/server.js",
     "heroku-postbuild": "npm run build"
   },
+  "type": "module",
   "author": "Greyson Elkins",
   "license": "ISC",
   "dependencies": {
