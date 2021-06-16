@@ -30,6 +30,11 @@ app.locals = {
   refresh_token: '',
 }
 
+const baseUrl =
+  process.env.NODE_ENV === 'developement'
+    ? 'https://mixdup-microservice.herokuapp.com/'
+    : 'http://localhost:8000'
+
 export const updateLocalTokens = ({ access_token, refresh_token }) => {
   app.locals.access_token = access_token
   app.locals.refresh_token = refresh_token
@@ -44,20 +49,20 @@ app.get('/', async (request, response) => {
   if (app.locals.access_token) {
     response.send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
   } else {
-    const authUri = await constructAuthURI('http://localhost:8000/authorize')
+    const authUri = await constructAuthURI(`${baseUrl}/authorize`)
     return authUri ? response.redirect(authUri) : response.send('something went wrong')
   }
 })
 
 app.get('/authorize', async (request, response) => {
   const code = request.query.code
-  const tokens = await requestAccessToken(code, 'http://localhost:8000/authorize')
+  const tokens = await requestAccessToken(code, `${baseUrl}/authorize`)
   if (tokens && tokens.access_token && tokens.refresh_token) {
     updateLocalTokens(tokens)
     saveTokensToFirebase(tokens)
-    response.redirect('http://localhost:8000')
+    response.redirect(baseUrl)
   } else {
-    response.redirect('http://localhost:8000') // would be nice if there was some handling
+    response.redirect(baseUrl) // would be nice if there was some handling
   }
 })
 
@@ -114,7 +119,7 @@ export const checkTokens = async () => {
     updateLocalTokens(tokens)
     return tokens.access_token
   } else {
-    console.error('The server needs to be authorized for Spotify. Go to http://localhost:8000')
+    console.error('The server needs to be authorized for Spotify.')
   }
 }
 
