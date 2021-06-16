@@ -76,7 +76,10 @@ app.post('/search-spotify', checkIfAuthenticated, (request, response) => {
 
 app.post('/contest-playlist', async (request, response) => {
   const { date } = request.body
-  if (!date) response.status(403).json('You must provide a date to get a playlist')
+  if (!date) response
+    .status(403)
+    .json('You must provide a date to get a playlist')
+    .set('Access-Control-Allow-Origin', '*')
   try {
     const playlist = getDay(parseISO(date)) >= 3 ? await getThisWeeksPlaylistDynamically(date) : await getLastWeeksPlaylistDynamically(date)
     playlist
