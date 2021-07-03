@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import 'core-js/stable'
+import 'regenerator-runtime/runtime'
 import { getDay, parseISO } from 'date-fns'
 import { checkIfAuthenticated } from './users'
 import performAuthorizedSpotifyAction, { 
