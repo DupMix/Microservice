@@ -4,8 +4,11 @@
   "description": "mixdup server",
   "main": "index.js",
   "scripts": {
+    "clean": "rm -rf build && mkdir build",
+    "build-babel": "babel -d ./build ./src -s",
+    "build": "npm run clean && npm run build-babel",
+    "start": "npm run build && node ./build/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --experimental-modules src/server.js",
     "local": "nodemon --exec babel-node src/server.js",
     "heroku-postbuild": "npm run build"
   },
@@ -16,9 +19,13 @@
   "author": "Greyson Elkins",
   "license": "ISC",
   "dependencies": {
+    "@babel/cli": "^7.0.0-beta.41",
+    "@babel/core": "^7.0.0-beta.41",
+    "@babel/preset-env": "^7.14.7",
     "@google-cloud/storage": "^5.8.5",
     "apollo-server": "^2.24.0",
     "apollo-server-express": "^2.24.0",
+    "babel-preset-env": "^1.7.0",
     "btoa": "^1.2.1",
     "cors": "^2.8.5",
     "date-fns": "^2.21.3",
@@ -30,10 +37,5 @@
     "node-fetch": "^2.6.1",
     "serve": "^12.0.0",
     "webcrypto-core": "^1.2.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.14.2",
-    "@babel/node": "^7.14.2",
-    "@babel/preset-env": "^7.14.2"
   }
 }
