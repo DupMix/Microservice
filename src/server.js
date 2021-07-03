@@ -51,8 +51,8 @@ export const databaseTokensChanged = async () => {
 app.get('/', async (request, response) => {
   if (app.locals.access_token) {
     response
-      .send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
       .set('Access-Control-Allow-Origin', '*')
+      .send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
   } else {
     const authUri = await constructAuthURI(`${baseUrl}/authorize`)
     return authUri ? response.redirect(authUri) : response.send('something went wrong').set('Access-Control-Allow-Origin', '*')
@@ -80,20 +80,20 @@ app.post('/search-spotify', checkIfAuthenticated, (request, response) => {
 app.post('/contest-playlist', async (request, response) => {
   const { date } = request.body
   if (!date) response
+    .set('Access-Control-Allow-Origin', '*')
     .status(403)
     .json('You must provide a date to get a playlist')
-    .set('Access-Control-Allow-Origin', '*')
   try {
     const playlist = getDay(parseISO(date)) >= 3 ? await getThisWeeksPlaylistDynamically(date) : await getLastWeeksPlaylistDynamically(date)
     playlist
       ? performAuthorizedSpotifyAction(getPlaylist, playlist.spotify_playlist_id, response)
-      : response.status(404).set('Access-Control-Allow-Origin', '*')
+      : response.set('Access-Control-Allow-Origin', '*').status(404)
   } catch (error) {
     console.error(error)
     response
+      .set('Access-Control-Allow-Origin', '*')
       .status(error.status || 500)
       .json({ error })
-      .set('Access-Control-Allow-Origin', '*')
   }
 })
 
@@ -102,7 +102,7 @@ app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
     const {user_id, submission_uri, trackName, date} = request.body
     const playlist_id = await attemptSubmissionToFirebase(user_id, submission_uri, trackName, date, response)
     playlist_id && await useSpotify(submitToPlaylist, { playlist_id, submission_uri })
-    response.status(200).set('Access-Control-Allow-Origin', '*').send()
+    response.set('Access-Control-Allow-Origin', '*').status(200).send()
   } catch (error) {
     console.error('submit-song-endpoint:', error)
   }
@@ -113,13 +113,13 @@ app.post('/submit-votes', checkIfAuthenticated, async (request, response) => {
     const { user_id, votes, date } = request.body
     if (await userVotedThisWeek(user_id, date)) return response.status(429).set('Access-Control-Allow-Origin', '*').send()
     submitVotesToFirebase(user_id, votes, date)
-    response.status(201).set('Access-Control-Allow-Origin', '*').send()
+    response.set('Access-Control-Allow-Origin', '*').status(201).send()
   } catch (error) {
     console.error(error)
     response
+      .set('Access-Control-Allow-Origin', '*')
       .status(error.status || 500)
       .json({ error })
-      .set('Access-Control-Allow-Origin', '*')
   }
 })
 
