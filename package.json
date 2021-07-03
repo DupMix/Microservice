@@ -34,6 +34,7 @@
     "firebase-admin": "^9.8.0",
     "graphql": "^15.5.0",
     "node-fetch": "^2.6.1",
+    "regenerator-runtime": "^0.11.1",
     "serve": "^12.0.0",
     "webcrypto-core": "^1.2.0"
   }
