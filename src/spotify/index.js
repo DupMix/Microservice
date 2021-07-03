@@ -22,7 +22,7 @@ const performAuthorizedSpotifyAction = async (spotifyAction, query, res) => {
       return response
         .text()
         .then((text) => {
-          res && res.send(text).set('Access-Control-Allow-Origin', '*')
+          res && res.set('Access-Control-Allow-Origin', '*').send(text)
           return(text)
         })
         .catch((error) => console.error(error))
@@ -36,7 +36,7 @@ const performAuthorizedSpotifyAction = async (spotifyAction, query, res) => {
               secondResponse
                 .text()
                 .then((text) => {
-                  res.send(text).set('Access-Control-Allow-Origin', '*')
+                  res.set('Access-Control-Allow-Origin', '*').send(text)
                   return(text)
                 })
                 .catch((error) => console.error(error))
