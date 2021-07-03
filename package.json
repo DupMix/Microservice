@@ -12,7 +12,6 @@
     "local": "nodemon --exec babel-node src/server.js",
     "heroku-postbuild": "npm run build"
   },
-  "type": "module",
   "engines": {
     "node": "15.11.0"
   },
