@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { format } from 'date-fns'
-import { savePlaylistToFirebase, getPlaylistsFromFirebase } from '../firebase'
+import { savePlaylistToFirebase, selectANewTheme } from '../firebase'
 
 const getName = async () => {
   try {
@@ -27,6 +27,7 @@ const getName = async () => {
 
 export const makePlaylist = async (access_token, date) => {
   const name = await getName()
+  const theme = await selectANewTheme()
   try {
     const data = await fetch('https://api.spotify.com/v1/users/e7ermk7v6qi3y0mbqibh5do2k/playlists', {
       method: 'POST',
@@ -36,11 +37,11 @@ export const makePlaylist = async (access_token, date) => {
       },
       body: JSON.stringify({
         name: name,
-        description: 'test theme'
+        description: theme
       }),
     })
     return data.ok && data.text().then(text => JSON.parse(text)).then(data => {
-      savePlaylistToFirebase(data.id, data.name, date)
+      savePlaylistToFirebase(data.id, data.name, date, theme)
       return data.id
     })
   } catch (error) {
