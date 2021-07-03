@@ -30,6 +30,8 @@ app.locals = {
   refresh_token: '',
 }
 
+const port = process.env.PORT || 8000
+
 const baseUrl =
   process.env.NODE_ENV === 'developement'
     ? 'https://mixdup-microservice.herokuapp.com/'
@@ -136,7 +138,7 @@ export const checkTokens = async () => {
   }
 }
 
-app.listen({ port: 8000 }, async () => {
-  console.log(`The Mixdup server is running on http://localhost:8000`)  
+app.listen(port, async () => {
+  console.log(`The Mixdup server is running on http://localhost:${port}`)  
   checkTokens()
 })
