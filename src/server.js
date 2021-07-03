@@ -55,7 +55,9 @@ app.get('/', async (request, response) => {
       .send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
   } else {
     const authUri = await constructAuthURI(`${baseUrl}/authorize`)
-    return authUri ? response.redirect(authUri) : response.send('something went wrong').set('Access-Control-Allow-Origin', '*')
+    return authUri
+      ? response.redirect(authUri)
+      : response.set('Access-Control-Allow-Origin', '*').send('something went wrong')
   }
 })
 
@@ -82,7 +84,6 @@ app.post('/contest-playlist', async (request, response) => {
   if (!date) response
     .set('Access-Control-Allow-Origin', '*')
     .status(403)
-    .json('You must provide a date to get a playlist')
   try {
     const playlist = getDay(parseISO(date)) >= 3 ? await getThisWeeksPlaylistDynamically(date) : await getLastWeeksPlaylistDynamically(date)
     playlist
@@ -96,6 +97,16 @@ app.post('/contest-playlist', async (request, response) => {
       .json({ error })
   }
 })
+
+// app.get('/this-weeks-theme', async (request, response) => {
+//   const { date } = request.body
+//   try {
+//     const playlist = await getThisWeeksPlaylistDynamically(date)
+
+//   } catch (error) {
+
+//   }
+// })
 
 app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
   try {
@@ -111,7 +122,7 @@ app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
 app.post('/submit-votes', checkIfAuthenticated, async (request, response) => {
   try {
     const { user_id, votes, date } = request.body
-    if (await userVotedThisWeek(user_id, date)) return response.status(429).set('Access-Control-Allow-Origin', '*').send()
+    if (await userVotedThisWeek(user_id, date)) return response.set('Access-Control-Allow-Origin', '*').status(429).send()
     submitVotesToFirebase(user_id, votes, date)
     response.set('Access-Control-Allow-Origin', '*').status(201).send()
   } catch (error) {
