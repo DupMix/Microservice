@@ -27,7 +27,7 @@ const getName = async () => {
 
 export const makePlaylist = async (access_token, date) => {
   const name = await getName()
-  const theme = await selectANewTheme()
+  const theme = await selectANewTheme() || 'Test theme'
   try {
     const data = await fetch('https://api.spotify.com/v1/users/e7ermk7v6qi3y0mbqibh5do2k/playlists', {
       method: 'POST',
@@ -40,9 +40,10 @@ export const makePlaylist = async (access_token, date) => {
         description: theme
       }),
     })
+    if (!data.ok) return console.error(data)
     return data.ok && data.text().then(text => JSON.parse(text)).then(data => {
       savePlaylistToFirebase(data.id, data.name, date, theme)
-      return data.id
+      return { id: data.id, theme }
     })
   } catch (error) {
     console.error('make-playlist-error', error)
