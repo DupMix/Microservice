@@ -9,7 +9,8 @@ import performAuthorizedSpotifyAction, {
   requestAccessToken, 
   searchSpotify, 
   getPlaylist,
-  submitToPlaylist
+  submitToPlaylist,
+  makePlaylist
 } from './spotify'
 import { 
   saveTokensToFirebase, 
@@ -33,10 +34,7 @@ app.locals = {
 
 const port = process.env.PORT || 8000
 
-const baseUrl =
-  process.env.NODE_ENV === 'developement'
-    ? 'https://mixdup-microservice.herokuapp.com/'
-    : 'http://localhost:8000'
+const baseUrl = 'https://mixdup-microservice.herokuapp.com/'
 
 export const updateLocalTokens = ({ access_token, refresh_token }) => {
   app.locals.access_token = access_token
@@ -98,15 +96,22 @@ app.post('/contest-playlist', async (request, response) => {
   }
 })
 
-// app.get('/this-weeks-theme', async (request, response) => {
-//   const { date } = request.body
-//   try {
-//     const playlist = await getThisWeeksPlaylistDynamically(date)
-
-//   } catch (error) {
-
-//   }
-// })
+app.post('/new-theme-new-list', checkIfAuthenticated, async (request, response) => {
+  console.log('Getting a theme')
+  const { date } = request.body
+  try {
+    const playlist = await getThisWeeksPlaylistDynamically(date, true)
+    if (playlist) return response.set('Access-Control-Allow-Origin', '*').status(200).send(playlist.theme)
+    const newList = await useSpotify(makePlaylist, date)
+    return response.set('Access-Control-Allow-Origin').status(201).send(newList?.theme)
+  } catch (error) {
+    console.error(error)
+    response
+      .set('Access-Control-Allow-Origin', '*')
+      .status(error.status || 500)
+      .json({ error })
+  }
+})
 
 app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
   try {
