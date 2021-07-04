@@ -1,5 +1,4 @@
 import fetch from 'node-fetch'
-import { format } from 'date-fns'
 import { savePlaylistToFirebase, selectANewTheme } from '../firebase'
 
 const getName = async () => {
@@ -14,17 +13,6 @@ const getName = async () => {
   }
 }
 
-// const getTheme = async () => {
-//   try {
-//     const data = await fetch (`https://api.quotable.io/random`)  
-//     console.log(data)
-//     return data.content
-//   } catch (error) {
-//     console.error(error)
-//     return 'Error generating theme'
-//   }
-// }
-
 export const makePlaylist = async (access_token, date) => {
   const name = await getName()
   const theme = await selectANewTheme() || 'Test theme'
@@ -33,7 +21,7 @@ export const makePlaylist = async (access_token, date) => {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${access_token}`,
-        'content-type': 'application/json', // this was .json for a second and didn't have issues?
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
         name: name,
@@ -75,10 +63,3 @@ export const submitToPlaylist = async (access_token, { playlist_id, submission_u
     console.error('submit-to-spotify-playlist:', error)
   }
 }
-
-// determine last weeks playlist
-  // get all playlists 
-  // sort and find the most recent one that's over a week old
-
-// addSongs to this weeks playlist
-  // get all playlists
