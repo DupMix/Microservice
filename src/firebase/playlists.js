@@ -96,10 +96,11 @@ export const attemptSubmissionToFirebase = async (userId, submission_uri, trackN
     let newId;
     const thisWeeksPlaylist =  await getThisWeeksPlaylistDynamically(date, true)
     if (!thisWeeksPlaylist) {
-      newId = await useSpotify(makePlaylist, date)
+      newId = await useSpotify(makePlaylist, date).id
+      if (!newId) return response.set('Access-Control-Allow-Origin', '*').status(500).send()
     } else {
       const exists = await checkForExistingSubmission(userId, thisWeeksPlaylist?.spotify_playlist_id)
-      if (exists) return response.status(429).send()
+      if (exists) return response.set('Access-Control-Allow-Origin', '*').status(429).send()
     }
       const playlist = thisWeeksPlaylist ? thisWeeksPlaylist.spotify_playlist_id : newId
       await saveSubmissionToFirebase(playlist, userId, submission_uri, trackName, date)
