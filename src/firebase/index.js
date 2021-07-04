@@ -7,3 +7,4 @@ export {
   attemptSubmissionToFirebase,
 } from './playlists'
 export { submitVotesToFirebase, getAllWeekVotes, userVotedThisWeek } from './votes'
+export { getThemesFromFirebase, removeThemeFromFirebase, selectANewTheme } from './themes'
