@@ -34,8 +34,6 @@ app.locals = {
 
 const port = process.env.PORT || 8000
 
-const baseUrl = 'https://mixdup-microservice.herokuapp.com/'
-
 export const updateLocalTokens = ({ access_token, refresh_token }) => {
   app.locals.access_token = access_token
   app.locals.refresh_token = refresh_token
@@ -52,7 +50,7 @@ app.get('/', async (request, response) => {
       .set('Access-Control-Allow-Origin', '*')
       .send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
   } else {
-    const authUri = await constructAuthURI(`${baseUrl}/authorize`)
+    const authUri = await constructAuthURI(`localhost:8000/authorize`)
     return authUri
       ? response.redirect(authUri)
       : response.set('Access-Control-Allow-Origin', '*').send('something went wrong')
@@ -61,13 +59,13 @@ app.get('/', async (request, response) => {
 
 app.get('/authorize', async (request, response) => {
   const code = request.query.code
-  const tokens = await requestAccessToken(code, `${baseUrl}/authorize`)
+  const tokens = await requestAccessToken(code, `localhost:8000/authorize`)
   if (tokens && tokens.access_token && tokens.refresh_token) {
     updateLocalTokens(tokens)
     saveTokensToFirebase(tokens)
-    response.redirect(baseUrl)
+    response.redirect('localhost:8000')
   } else {
-    response.redirect(baseUrl) // would be nice if there was some handling
+    response.redirect('localhost:8000') // would be nice if there was some handling
   }
 })
 
