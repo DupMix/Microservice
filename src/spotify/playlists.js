@@ -13,6 +13,16 @@ const getName = async () => {
   }
 }
 
+export const getPlaylists = async (access_token) => {
+ const data = await fetch(`https://api.spotify.com/v1/users/e7ermk7v6qi3y0mbqibh5do2k/playlists`, {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+      'content-type': 'application/json',
+    },
+  })
+  return data.ok ? data.text().then((text) => JSON.parse(text)) : data
+}
+
 export const makePlaylist = async (access_token, date) => {
   const name = await getName()
   const theme = await selectANewTheme() || 'Test theme'
