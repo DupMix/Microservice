@@ -10,7 +10,8 @@ import performAuthorizedSpotifyAction, {
   searchSpotify, 
   getPlaylist,
   submitToPlaylist,
-  makePlaylist
+  makePlaylist,
+  getPlaylists
 } from './spotify'
 import { 
   saveTokensToFirebase, 
@@ -19,7 +20,7 @@ import {
   getThisWeeksPlaylistDynamically, 
   attemptSubmissionToFirebase,
   userVotedThisWeek,
-  submitVotesToFirebase
+  submitVotesToFirebase,
 } from './firebase'
 require('dotenv').config()
 
@@ -50,7 +51,7 @@ app.get('/', async (request, response) => {
       .set('Access-Control-Allow-Origin', '*')
       .send(`Welcome to Mixdup. ${app.locals.access_token && 'I am powered by Spotify.'}`)
   } else {
-    const authUri = await constructAuthURI(`localhost:8000/authorize`)
+    const authUri = await constructAuthURI(`http://localhost:8000/authorize`)
     return authUri
       ? response.redirect(authUri)
       : response.set('Access-Control-Allow-Origin', '*').send('something went wrong')
@@ -59,7 +60,7 @@ app.get('/', async (request, response) => {
 
 app.get('/authorize', async (request, response) => {
   const code = request.query.code
-  const tokens = await requestAccessToken(code, `localhost:8000/authorize`)
+  const tokens = await requestAccessToken(code, `http://localhost:8000/authorize`)
   if (tokens && tokens.access_token && tokens.refresh_token) {
     updateLocalTokens(tokens)
     saveTokensToFirebase(tokens)
@@ -134,6 +135,16 @@ app.post('/submit-votes', checkIfAuthenticated, async (request, response) => {
       .set('Access-Control-Allow-Origin', '*')
       .status(error.status || 500)
       .json({ error })
+  }
+})
+
+app.get('/all-playlists', checkIfAuthenticated, async (request, response) => {
+  console.log('getting all playlists')
+  try {
+    const playlists = await useSpotify(getPlaylists)
+    response.set('Access-Control-Allow-Origin', '*').status(200).json(playlists)
+  } catch (error) {
+    console.error('endpoint-error', error)
   }
 })
 
