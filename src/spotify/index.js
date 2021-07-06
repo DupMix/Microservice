@@ -5,10 +5,21 @@ import { checkTokens } from '../server'
 export const useSpotify = async (spotifyAction, query) => {
   const { access_token } = await checkTokens()
   try {
-    return await spotifyAction(access_token, query)
+    const result = await spotifyAction(access_token, query)
+    if (!result.status) return result
+    if (result.status === 401) useSpotifyAgain(spotifyAction, query)
+    else console.error(result.status, result.statusText)
   } catch (error) {
-    const { access_token, error: new_error } = error.status === 401 && await getRefreshedAuth()
-    return access_token ? spotifyAction(access_token, query) : console.error(new_error)
+    console.error(error)
+  }
+}
+
+export const useSpotifyAgain = async (spotifyAction, query) => {
+  try {
+    const { access_token } = await getRefreshedAuth() 
+    return access_token && spotifyAction(access_token, query)
+  } catch (error) {
+    console.error(error)
   }
 }
 
@@ -78,5 +89,5 @@ export const searchSpotify = (accessSpotify, query) => {
 }
 
 export { getRefreshedAuth, constructAuthURI, requestAccessToken } from './auth'
-export { makePlaylist, getPlaylist, submitToPlaylist } from './playlists'
+export { makePlaylist, getPlaylist, submitToPlaylist, getPlaylists } from './playlists'
 export default performAuthorizedSpotifyAction
