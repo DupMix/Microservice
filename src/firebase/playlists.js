@@ -47,22 +47,22 @@ export const getLastWeeksPlaylistDynamically = async (today) => {
 
 export const getThisWeeksPlaylistDynamically = async (today, forSubmission) => {
   const parsedDate = parseISO(today)
-  const lastSunday = sub(parsedDate, { days: getDay(parsedDate) })
+  const lastSunday = sub(parsedDate, { days: getDay(parsedDate) + 1 })
   const lastSaturday = sub(lastSunday, { days: 1 } )
   try {
     const playlists = Object.values(await getPlaylistsFromFirebase())
-    return playlists.find(({ created_at }) => {
+    const result =  playlists.find(({ created_at }, i) => {
       const made = parseISO(created_at)
       return (
         isAfter(made, forSubmission ? lastSaturday : lastSunday) &&
         isBefore(made, nextWednesday(lastSunday))
-      )
-    }) 
+        )
+      }) 
+      return result
   } catch(error) {
     console.error(error.message)
   }
 }
-
 
 const getAllSubmissions = async () => {
   try {
@@ -93,18 +93,18 @@ const checkForExistingSubmission = async (user, playlist_id) => {
 
 export const attemptSubmissionToFirebase = async (userId, submission_uri, trackName, date, response) => { 
   try {
-    let newId;
+    // let newId;
     const thisWeeksPlaylist =  await getThisWeeksPlaylistDynamically(date, true)
-    if (!thisWeeksPlaylist) {
-      newId = await useSpotify(makePlaylist, date).id
-      if (!newId) return response.set('Access-Control-Allow-Origin', '*').status(500).send()
-    } else {
+    // if (!thisWeeksPlaylist) {
+    //   newId = await useSpotify(makePlaylist, date).id
+    //   if (!newId) return response.set('Access-Control-Allow-Origin', '*').status(500)
+    // } else {
       const exists = await checkForExistingSubmission(userId, thisWeeksPlaylist?.spotify_playlist_id)
-      if (exists) return response.set('Access-Control-Allow-Origin', '*').status(429).send()
-    }
-      const playlist = thisWeeksPlaylist ? thisWeeksPlaylist.spotify_playlist_id : newId
-      await saveSubmissionToFirebase(playlist, userId, submission_uri, trackName, date)
-      return playlist
+      if (exists) return response.set('Access-Control-Allow-Origin', '*').status(429)
+    // }
+      // const playlist = thisWeeksPlaylist ? thisWeeksPlaylist.spotify_playlist_id : newId
+      await saveSubmissionToFirebase(thisWeeksPlaylist.spotify_playlist_id, userId, submission_uri, trackName, date)
+      return thisWeeksPlaylist
   } catch (error) {
     console.error('firebase-submission-error:', error)
   }

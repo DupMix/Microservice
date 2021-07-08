@@ -59,9 +59,10 @@ export const getPlaylist = (access_token, playlist_id) => {
     .catch((error) => console.error(error))
 }
 
-export const submitToPlaylist = async (access_token, { playlist_id, submission_uri }) => {
+export const submitToPlaylist = async (access_token, { spotify_playlist_id, submission_uri }) => {
+  console.log
   try {
-    return await fetch(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, {
+    return await fetch(`https://api.spotify.com/v1/playlists/${spotify_playlist_id}/tracks`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

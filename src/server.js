@@ -115,9 +115,12 @@ app.post('/new-theme-new-list', checkIfAuthenticated, async (request, response) 
 app.post('/submit-song', checkIfAuthenticated, async (request, response) => {
   try {
     const {user_id, submission_uri, trackName, date} = request.body
-    const playlist_id = await attemptSubmissionToFirebase(user_id, submission_uri, trackName, date, response)
-    playlist_id && await useSpotify(submitToPlaylist, { playlist_id, submission_uri })
-    response.set('Access-Control-Allow-Origin', '*').status(200).send()
+    const { spotify_playlist_id } = await attemptSubmissionToFirebase(user_id, submission_uri, trackName, date, response)
+    if (spotify_playlist_id) {
+      await useSpotify(submitToPlaylist, { spotify_playlist_id, submission_uri })
+      response.set('Access-Control-Allow-Origin', '*').status(200)
+    }
+    response.send()
   } catch (error) {
     console.error('submit-song-endpoint:', error)
   }
