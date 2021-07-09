@@ -23,6 +23,20 @@ export const getPlaylists = async (access_token) => {
   return data.ok ? data.text().then((text) => JSON.parse(text)) : data
 }
 
+export const getPlaylist = async (access_token, playlist_id) => {
+  try {
+    const data = await fetch(`https://api.spotify.com/v1/playlists/${playlist_id}`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        'content-type': 'application/json', // this was .json for a second and didn't have issues?
+      },
+    })
+    return data.ok ? data.text().then(text => JSON.parse(text)) : data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 export const makePlaylist = async (access_token, date) => {
   const name = await getName()
   const theme = await selectANewTheme() || 'Test theme'
@@ -46,17 +60,6 @@ export const makePlaylist = async (access_token, date) => {
   } catch (error) {
     console.error('make-playlist-error', error)
   }
-}
-
-export const getPlaylist = (access_token, playlist_id) => {
-  return fetch(`https://api.spotify.com/v1/playlists/${playlist_id}`, {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-      'content-type': 'application/json', // this was .json for a second and didn't have issues?
-    },
-  })
-    .then((response) => response)
-    .catch((error) => console.error(error))
 }
 
 export const submitToPlaylist = async (access_token, { spotify_playlist_id, submission_uri }) => {

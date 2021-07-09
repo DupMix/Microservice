@@ -147,7 +147,17 @@ app.get('/all-playlists', checkIfAuthenticated, async (request, response) => {
     const playlists = await useSpotify(getPlaylists)
     response.set('Access-Control-Allow-Origin', '*').status(200).json(playlists)
   } catch (error) {
-    console.error('endpoint-error', error)
+    console.error('all-playlist-error', error)
+  }
+})
+
+app.post('/get-playlist', checkIfAuthenticated, async (request, response) => {
+  const { playlist_id } = request.body
+  try {
+    const playlist = await useSpotify(getPlaylist, playlist_id)
+    response.set('Access-Control-Allow-Origin', '*').status(200).json(playlist)
+  } catch(error) {
+    console.error('get-playlist-error', error)
   }
 })
 

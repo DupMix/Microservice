@@ -1,6 +1,5 @@
 import admin from './admin'
 import { isBefore, isAfter, sub, getDay, nextWednesday, format, parseISO } from 'date-fns'
-import { useSpotify, makePlaylist } from '../spotify'
 
 export const savePlaylistToFirebase = (id, name, date) => {
   try {
