@@ -1,14 +1,14 @@
 import admin from './admin'
 import { isBefore, isAfter, sub, getDay, nextWednesday, format, parseISO } from 'date-fns'
 
-export const savePlaylistToFirebase = (id, name, date) => {
+export const savePlaylistToFirebase = (id, name, date, theme) => {
   try {
     const playlists = admin.database().ref('playlists/')
     const newPlaylist = playlists.push()
     newPlaylist.set({
       spotify_playlist_id: id,
       name,
-      theme: 'test_theme',
+      theme: theme,
       updated_at: format(parseISO(date) || new Date(), 'yyyy-MM-dd'),
       created_at: format(parseISO(date) || new Date(), 'yyyy-MM-dd'),
     })
