@@ -71,7 +71,6 @@ app.get('/authorize', async (request, response) => {
 })
 
 app.post('/search-spotify', checkIfAuthenticated, (request, response) => {
-  console.log('searching...')
   const { query } = request.body
   return performAuthorizedSpotifyAction(searchSpotify, query, response)
 })
@@ -83,9 +82,9 @@ app.post('/contest-playlist', async (request, response) => {
     .status(403)
   try {
     const playlist = getDay(parseISO(date)) >= 3 ? await getThisWeeksPlaylistDynamically(date) : await getLastWeeksPlaylistDynamically(date)
-    playlist
-      ? performAuthorizedSpotifyAction(getPlaylist, playlist.spotify_playlist_id, response)
-      : response.set('Access-Control-Allow-Origin', '*').status(404)
+    if (!playlist) return response.set('Access-Control-Allow-Origin', '*').status(404)
+    const playlistData = await useSpotify(getPlaylist, playlist.spotify_playlist_id)
+    response.set('Access-Control-Allow-Origin', '*').status(200).json(playlistData)
   } catch (error) {
     console.error(error)
     response
@@ -96,7 +95,6 @@ app.post('/contest-playlist', async (request, response) => {
 })
 
 app.post('/new-theme-new-list', checkIfAuthenticated, async (request, response) => {
-  console.log('Getting a theme')
   const { date } = request.body
   try {
     const playlist = await getThisWeeksPlaylistDynamically(date, true)
@@ -142,7 +140,6 @@ app.post('/submit-votes', checkIfAuthenticated, async (request, response) => {
 })
 
 app.get('/all-playlists', checkIfAuthenticated, async (request, response) => {
-  console.log('getting all playlists')
   try {
     const playlists = await useSpotify(getPlaylists)
     response.set('Access-Control-Allow-Origin', '*').status(200).json(playlists)
@@ -162,14 +159,11 @@ app.post('/get-playlist', checkIfAuthenticated, async (request, response) => {
 })
 
 export const checkTokens = async () => {
-  console.log('Checking for Spotify tokens')
   if (app.locals.access_token !== '' && app.locals.refresh_token !== '') {
-    console.log('Found local tokens')
     return { access_token: app.locals.access_token }
   }
   const tokens = await getTokensFromFirebase()
   if (tokens?.access_token && tokens?.refresh_token) {
-    console.log('Tokens retrieved from the database')
     updateLocalTokens(tokens)
     return tokens.access_token
   } else {
