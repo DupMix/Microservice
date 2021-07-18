@@ -8,7 +8,7 @@ export const useSpotify = async (spotifyAction, query) => {
     const result = await spotifyAction(access_token, query)
     if (!result.status) return result
     if (result.status === 401) useSpotifyAgain(spotifyAction, query)
-    else console.error(result.status, result.statusText)
+    else console.error('uncategorized spotify error', result.status, result.statusText)
   } catch (error) {
     console.error(error)
   }
@@ -66,10 +66,7 @@ const performAuthorizedSpotifyAction = async (spotifyAction, query, res) => {
         }
       })
     } else {
-      response
-        .text()
-        .then((text) => console.error(JSON.parse(text)))
-        .catch((error) => console.error(error))
+      console.log(response)
       return response
     }
   }).catch(error => console.error(error))
